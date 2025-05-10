@@ -8,8 +8,8 @@ ENABLE_VISUAL            = False    # Meant to be used only during evaluation/te
 ENABLE_TRUE_RANDOM_GOALS = False    # If false, goals are selected semi-randomly from a list of known valid goal positions
 ENABLE_DYNAMIC_GOALS     = False    # If true, goal difficulty (distance) is adapted according to current success rate
 MODEL_STORE_INTERVAL     = 100      # Store the model weights every N episodes
-GRAPH_DRAW_INTERVAL      = 10       # Draw the graph every N episodes (drawing too often will slow down training)
-GRAPH_AVERAGE_REWARD     = 10       # Average the reward graph over every N episodes
+GRAPH_DRAW_INTERVAL      = 50       # Draw the graph every N episodes (drawing too often will slow down training)
+GRAPH_AVERAGE_REWARD     = 50       # Average the reward graph over every N episodes
 
 
 # ===================================================================== #
@@ -76,7 +76,7 @@ DISCOUNT_FACTOR = 0.99
 LEARNING_RATE   = 0.003
 TAU             = 0.003
 
-OBSERVE_STEPS   = 25000     # At training start random actions are taken for N steps for better exploration
+OBSERVE_STEPS   = 10000     # At training start random actions are taken for N steps for better exploration
 STEP_TIME       = 0.01      # Delay between steps, can be set to 0
 EPSILON_DECAY   = 0.9995    # Epsilon decay per step
 EPSILON_MINIMUM = 0.05

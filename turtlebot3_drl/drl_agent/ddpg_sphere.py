@@ -2,9 +2,9 @@ import numpy as np
 import copy
 import math
 import time
-import torch
-import torch.nn.functional as F
-import torch.nn as nn
+import torch # type: ignore
+import torch.nn.functional as F # type: ignore
+import torch.nn as nn # type: ignore
 from turtlebot3_drl.drl_environment.reward import REWARD_FUNCTION
 from .off_policy_agent import OffPolicyAgent, Network
 from .ddpg import DDPG

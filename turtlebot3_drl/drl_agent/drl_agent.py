@@ -36,6 +36,7 @@ from .ddpg import DDPG
 from .td3 import TD3
 from .ddpg_with_pid import DDPGWithPID
 from .ddpg_sphere import DDPGWithSphere
+from .dqn_sphere import DQNWithSphere
 
 from turtlebot3_msgs.srv import DrlStep, Goal
 from std_srvs.srv import Empty
@@ -63,6 +64,21 @@ class DrlAgent(Node):
 
         if self.algorithm == 'dqn':
             self.model = DQN(self.device, self.sim_speed)
+        elif self.algorithm == 'dqn_sphere':
+            ctrl_params = {
+                'k_alpha':     2.18,
+                'k_alpha_acc': 238.74,
+                'V_max':       0.3,
+                'k_r':         0.1,
+                'k_t':         1.0/1000.0
+            }
+            self.model = DQNWithSphere(
+                device=self.device,
+                sim_speed=self.sim_speed,
+                controller_params=ctrl_params,
+                blend=0.85   # adjust between 0–1
+            )
+
         elif self.algorithm == 'ddpg':
             self.model = DDPG(self.device, self.sim_speed)
         elif self.algorithm == 'ddpg_pid':
@@ -71,7 +87,7 @@ class DrlAgent(Node):
                 device=self.device,
                 sim_speed=self.sim_speed,
                 pid_params=pid_params,
-                blend=0.7
+                blend=0.4
             )
         elif self.algorithm == 'ddpg_sphere':
             ctrl_params = {
@@ -154,11 +170,16 @@ class DrlAgent(Node):
                 if self.training and self.total_steps < self.observe_steps:
                     action = self.model.get_action_random()
                 else:
-                    action = self.model.get_action(state, self.training, step, ENABLE_VISUAL)
+                    action = (self.model.get_pure_action(state, self.training, step, ENABLE_VISUAL)
+                       if self.algorithm == 'dqn_sphere' else self.model.get_action(state, self.training, step, ENABLE_VISUAL))
 
-                action_current = action
+                
                 if self.algorithm == 'dqn':
                     action_current = self.model.possible_actions[action]
+                elif self.algorithm == 'dqn_sphere':
+                    action_current = self.model.get_action(state, self.training, step, ENABLE_VISUAL)
+                else:
+                    action_current = action
 
                 # Take a step
                 next_state, reward, episode_done, outcome, distance_traveled = util.step(self, action_current, action_past)
@@ -174,7 +195,8 @@ class DrlAgent(Node):
 
                 # Train
                 if self.training == True:
-                    self.replay_buffer.add_sample(state, action, [reward], next_state, [episode_done])
+                    to_store = action if self.algorithm.startswith('dqn') else action_current
+                    self.replay_buffer.add_sample(state, to_store, [reward], next_state, [episode_done])
                     if self.replay_buffer.get_length() >= self.model.batch_size:
                         loss_c, loss_a, = self.model._train(self.replay_buffer)
                         loss_critic += loss_c
