@@ -37,6 +37,7 @@ from .td3 import TD3
 from .ddpg_with_pid import DDPGWithPID
 from .ddpg_sphere import DDPGWithSphere
 from .dqn_sphere import DQNWithSphere
+from .td3_sphere import TD3WithSphere
 
 from turtlebot3_msgs.srv import DrlStep, Goal
 from std_srvs.srv import Empty
@@ -87,7 +88,7 @@ class DrlAgent(Node):
                 device=self.device,
                 sim_speed=self.sim_speed,
                 pid_params=pid_params,
-                blend=0.4
+                blend=0.85
             )
         elif self.algorithm == 'ddpg_sphere':
             ctrl_params = {
@@ -101,10 +102,24 @@ class DrlAgent(Node):
                 device=self.device,
                 sim_speed=self.sim_speed,
                 controller_params=ctrl_params,
-                blend=0.7   # 0.0 = all classical, 1.0 = all RL
+                blend=0.85   # 0.0 = all classical, 1.0 = all RL
                 )
         elif self.algorithm == 'td3':
             self.model = TD3(self.device, self.sim_speed)
+        elif self.algorithm == 'td3_sphere':
+            ctrl_params = {
+                'k_alpha':     2.18,
+                'k_alpha_acc': 238.74,
+                'V_max':       0.3,
+                'k_r':         0.1,
+                'k_t':         1.0/1000.0
+            }
+            self.model = TD3WithSphere(
+                device=self.device,
+                sim_speed=self.sim_speed,
+                controller_params=ctrl_params,
+                blend=0.8
+            )
         else:
             quit("\033[1m" + "\033[93m" + f"invalid algorithm specified ({self.algorithm}), choose one of: dqn, ddpg, td3" + "\033[0m}")
 
