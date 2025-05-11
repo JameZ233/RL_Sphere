@@ -34,6 +34,7 @@ from ..common import utilities as util
 from .dqn import DQN
 from .ddpg import DDPG
 from .td3 import TD3
+from .ppo import PPO
 from .vpg import VPG
 
 from turtlebot3_msgs.srv import DrlStep, Goal
@@ -58,17 +59,19 @@ class DrlAgent(Node):
         self.sim_speed = util.get_simulation_speed(util.stage) if not self.real_robot else 1
         print(f"{'training' if (self.training) else 'testing' } on stage: {util.stage}")
         self.total_steps = 0
-        self.observe_steps = 0 if self.algorithm == 'vpg' else OBSERVE_STEPS
+        self.observe_steps = OBSERVE_STEPS
         if self.algorithm == 'dqn':
             self.model = DQN(self.device, self.sim_speed)
         elif self.algorithm == 'ddpg':
             self.model = DDPG(self.device, self.sim_speed)
         elif self.algorithm == 'td3':
             self.model = TD3(self.device, self.sim_speed)
+        elif self.algorithm == 'ppo':
+            self.model = PPO(self.device, self.sim_speed)
         elif self.algorithm == 'vpg':
             self.model = VPG(self.device, self.sim_speed)
         else:
-            quit("\033[1m" + "\033[93m" + f"invalid algorithm specified ({self.algorithm}), choose one of: dqn, ddpg, td3" + "\033[0m}")
+            quit("\033[1m" + "\033[93m" + f"invalid algorithm specified ({self.algorithm}), choose one of: dqn, ddpg, td3, ppo" + "\033[0m}")
 
         self.replay_buffer = ReplayBuffer(self.model.buffer_size)
         self.graph = Graph()
